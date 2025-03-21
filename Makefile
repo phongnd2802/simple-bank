@@ -28,7 +28,9 @@ create-migration:
 sqlc:
 	sqlc generate
 
+server:
+	go run main.go
 
 test:
 	go test -v -cover ./...
-.PHONY: test network postgres createdb dropdb migrate-up migrate-down create-migration sqlc
+.PHONY: server test network postgres createdb dropdb migrate-up migrate-down create-migration sqlc

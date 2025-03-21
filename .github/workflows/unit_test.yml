@@ -36,7 +36,7 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
-      - name: Install golang-migrate
+      - name: Install gooseg
         run: |
           curl -fsSL https://raw.githubusercontent.com/pressly/goose/master/install.sh | sh
           which goose

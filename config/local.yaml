@@ -1,0 +1,9 @@
+
+
+data_source:
+  driver: postgres
+  source: postgresql://root:secret@localhost:5678/simple-bank?sslmode=disable
+
+server:
+  host: 0.0.0.0
+  port: 8002
