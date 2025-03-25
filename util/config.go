@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -10,6 +11,7 @@ import (
 type Config struct {
 	DB     Database `mapstructure:"data_source"`
 	Server Server   `mapstructure:"server"`
+	Token  Token    `mapstructure:"jwt"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -26,7 +28,6 @@ func LoadConfig(path string) (config Config, err error) {
 	return
 }
 
-
 type Server struct {
 	Host string `mapstructure:"host"`
 	Port string `mapstructure:"port"`
@@ -36,8 +37,12 @@ func (s *Server) Addr() string {
 	return fmt.Sprintf("%s:%s", s.Host, s.Port)
 }
 
-
 type Database struct {
 	Driver string `mapstructure:"driver"`
 	Source string `mapstructure:"source"`
+}
+
+type Token struct {
+	Secret              string        `mapstructure:"secret"`
+	AccessTokenDuration time.Duration `mapstructure:"access_token_duration"`
 }
