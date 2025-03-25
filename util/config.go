@@ -43,6 +43,7 @@ type Database struct {
 }
 
 type Token struct {
-	Secret              string        `mapstructure:"secret"`
-	AccessTokenDuration time.Duration `mapstructure:"access_token_duration"`
+	Secret               string        `mapstructure:"secret"`
+	AccessTokenDuration  time.Duration `mapstructure:"access_token_duration"`
+	RefreshTokenDuration time.Duration `mapstructure:"refresh_token_duration"`
 }

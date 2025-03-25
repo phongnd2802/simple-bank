@@ -14,7 +14,7 @@ import (
 
 
 func main() {
-	config, err := util.LoadConfig("production", "./config")
+	config, err := util.LoadConfig("local", "./config")
 	if err != nil {
 		log.Fatalf("cannot load config: %v", err)
 	}

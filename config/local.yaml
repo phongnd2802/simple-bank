@@ -11,3 +11,4 @@ server:
 jwt:
   secret: r439r743c89rbv436c942v36e123v9c46231e32ecbt53t
   access_token_duration: 15m
+  refresh_token_duration: 24h
