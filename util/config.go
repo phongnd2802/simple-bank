@@ -14,9 +14,9 @@ type Config struct {
 	Token  Token    `mapstructure:"jwt"`
 }
 
-func LoadConfig(path string) (config Config, err error) {
+func LoadConfig(name, path string) (config Config, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("local")
+	viper.SetConfigName(name)
 	viper.SetConfigType("yaml")
 
 	err = viper.ReadInConfig()

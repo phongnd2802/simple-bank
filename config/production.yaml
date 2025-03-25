@@ -1,0 +1,13 @@
+
+
+data_source:
+  driver: postgres
+  source: postgresql://root:secret@simple-bank:5432/simple-bank?sslmode=disable
+
+server:
+  host: 0.0.0.0
+  port: 8002
+
+jwt:
+  secret: r439r743c89rbv436c942v36e123v9c46231e32ecbt53t
+  access_token_duration: 15m
