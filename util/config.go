@@ -29,12 +29,17 @@ func LoadConfig(name, path string) (config Config, err error) {
 }
 
 type Server struct {
-	Host string `mapstructure:"host"`
-	Port string `mapstructure:"port"`
+	Http ServerAddress `mapstructure:"http"`
+	Grpc ServerAddress `mapstructure:"grpc"`
 }
 
-func (s *Server) Addr() string {
+func (s *ServerAddress) Addr() string {
 	return fmt.Sprintf("%s:%s", s.Host, s.Port)
+}
+
+type ServerAddress struct {
+	Host string `mapstructure:"host"`
+	Port string `mapstructure:"port"`
 }
 
 type Database struct {

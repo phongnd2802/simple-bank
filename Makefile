@@ -41,4 +41,14 @@ mock:
 
 test:
 	go test -v -cover ./...
-.PHONY: server build-server mock dev test network postgres createdb dropdb migrate-up migrate-down create-migration sqlc
+
+
+proto:
+	rm -f pb/*.go
+	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
+    --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+    proto/*.proto
+
+evans:
+	evans --host localhost --port 9090 -r repl
+.PHONY: server build-server mock dev test network postgres createdb dropdb migrate-up migrate-down create-migration sqlc proto evans
