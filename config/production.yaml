@@ -2,7 +2,7 @@
 
 data_source:
   driver: postgres
-  source: postgresql://root:secret@simple-bank:5432/simple-bank?sslmode=disable
+  source: postgresql://root:secret@postgres:5432/simple-bank?sslmode=disable
 
 server:
   host: 0.0.0.0
