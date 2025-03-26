@@ -5,8 +5,12 @@ data_source:
   source: postgresql://root:secret@postgres:5432/simple-bank?sslmode=disable
 
 server:
-  host: 0.0.0.0
-  port: 8002
+  http:
+    host: 0.0.0.0
+    port: 8002
+  grpc:
+    host: 0.0.0.0
+    port: 9090
 
 jwt:
   secret: r439r743c89rbv436c942v36e123v9c46231e32ecbt53t

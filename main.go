@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/phongnd2802/simple-bank/api"
@@ -26,7 +27,12 @@ import (
 var fileSwagger embed.FS
 
 func main() {
-	config, err := util.LoadConfig("local", "./config")
+	mode := os.Getenv("MODE")
+	if mode == "" {
+		mode = "local"
+	}
+
+	config, err := util.LoadConfig(mode, "./config")
 	if err != nil {
 		log.Fatalf("cannot load config: %v", err)
 	}
