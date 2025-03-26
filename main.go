@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"database/sql"
+	"embed"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -19,6 +21,9 @@ import (
 
 	_ "github.com/lib/pq"
 )
+
+//go:embed docs/swagger/*
+var fileSwagger embed.FS
 
 func main() {
 	config, err := util.LoadConfig("local", "./config")
@@ -85,6 +90,9 @@ func runGatewayServer(config util.Config, store db.Store) {
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
 
+	swaggerFS, _ := fs.Sub(fileSwagger, "docs/swagger")
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", http.FileServer(http.FS(swaggerFS))))
+
 	listener, err := net.Listen("tcp", config.Server.Http.Addr())
 	if err != nil {
 		log.Fatal("cannot create listener")
@@ -97,7 +105,6 @@ func runGatewayServer(config util.Config, store db.Store) {
 		log.Fatal("cannot create HTTP gateway server")
 	}
 }
-
 
 func runGinServer(config util.Config, store db.Store) {
 	server, err := api.NewServer(config, store)
