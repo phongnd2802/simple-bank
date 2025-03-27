@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"embed"
 	"io/fs"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -16,6 +15,8 @@ import (
 	"github.com/phongnd2802/simple-bank/gapi"
 	"github.com/phongnd2802/simple-bank/pb"
 	"github.com/phongnd2802/simple-bank/util"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -32,13 +33,17 @@ func main() {
 		mode = "local"
 	}
 
+	if mode == "local" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
 	config, err := util.LoadConfig(mode, "./config")
 	if err != nil {
-		log.Fatalf("cannot load config: %v", err)
+		log.Fatal().Msgf("cannot load config: %v", err)
 	}
 	conn, err := sql.Open(config.DB.Driver, config.DB.Source)
 	if err != nil {
-		log.Fatalf("cannot connect db: %v", err)
+		log.Fatal().Msgf("cannot connect db: %v", err)
 	}
 
 	store := db.NewStore(conn)
@@ -50,30 +55,31 @@ func main() {
 func runGrpcServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
-		log.Fatalf("cannot create new server: %v", err)
+		log.Fatal().Msgf("cannot create new server: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcLogger := grpc.UnaryInterceptor(gapi.GrpcLogger)
+	grpcServer := grpc.NewServer(grpcLogger)
 	pb.RegisterSimpleBankServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
 	listener, err := net.Listen("tcp", config.Server.Grpc.Addr())
 	if err != nil {
-		log.Fatal("cannot create listener")
+		log.Fatal().Msg("cannot create listener")
 	}
 
-	log.Printf("start gRPC server at %s", listener.Addr().String())
+	log.Info().Msgf("start gRPC server at %s", listener.Addr().String())
 
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatal("cannot create gRPC server")
+		log.Fatal().Msg("cannot create gRPC server")
 	}
 }
 
 func runGatewayServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
-		log.Fatalf("cannot create new server: %v", err)
+		log.Fatal().Msgf("cannot create new server: %v", err)
 	}
 
 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
@@ -90,7 +96,7 @@ func runGatewayServer(config util.Config, store db.Store) {
 	defer cancel()
 	err = pb.RegisterSimpleBankHandlerServer(ctx, grpcMux, server)
 	if err != nil {
-		log.Fatal("cannot register handler server")
+		log.Fatal().Msg("cannot register handler server")
 	}
 
 	mux := http.NewServeMux()
@@ -101,25 +107,25 @@ func runGatewayServer(config util.Config, store db.Store) {
 
 	listener, err := net.Listen("tcp", config.Server.Http.Addr())
 	if err != nil {
-		log.Fatal("cannot create listener")
+		log.Fatal().Msg("cannot create listener")
 	}
 
-	log.Printf("start HTTP gateway server at %s", listener.Addr().String())
+	log.Info().Msgf("start HTTP gateway server at %s", listener.Addr().String())
 
 	err = http.Serve(listener, mux)
 	if err != nil {
-		log.Fatal("cannot create HTTP gateway server")
+		log.Fatal().Msg("cannot create HTTP gateway server")
 	}
 }
 
 func runGinServer(config util.Config, store db.Store) {
 	server, err := api.NewServer(config, store)
 	if err != nil {
-		log.Fatalf("cannot create new server: %v", err)
+		log.Fatal().Msgf("cannot create new server: %v", err)
 	}
 
 	err = server.Start(config.Server.Http.Addr())
 	if err != nil {
-		log.Fatalf("cannot start server: %v", err)
+		log.Fatal().Msgf("cannot start server: %v", err)
 	}
 }
