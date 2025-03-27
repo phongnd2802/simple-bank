@@ -52,13 +52,13 @@ func (rec *ResponseRecorder) WriteHeader(statusCode int) {
 
 func (rec *ResponseRecorder) Write(body []byte) (int, error) {
 	rec.Body = body
-	return rec.Write(body)
+	return rec.ResponseWriter.Write(body)
 }
 
 
 func HttpLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		startTime :=  time.Now()
+		startTime := time.Now()
 		rec := &ResponseRecorder{
 			ResponseWriter: w,
 			StatusCode: http.StatusOK,
