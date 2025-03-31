@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	mockdb "github.com/phongnd2802/simple-bank/db/mock"
 	db "github.com/phongnd2802/simple-bank/db/sqlc"
 	"github.com/phongnd2802/simple-bank/token"
@@ -34,19 +34,19 @@ func TestTransferAPI(t *testing.T) {
 	account3.Currency = "EUR"
 
 	testCases := []struct {
-		name      string
-		body      gin.H
-		setupAuth func(t *testing.T, request *http.Request, tokenMaker token.Maker)
-		buildStubs func(store *mockdb.MockStore)
+		name          string
+		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "Success",
 			body: gin.H{
 				"from_account_id": account1.ID,
-				"to_account_id": account2.ID,
-				"amount": amount,
-				"currency": util.USD,
+				"to_account_id":   account2.ID,
+				"amount":          amount,
+				"currency":        util.USD,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute)
@@ -57,8 +57,8 @@ func TestTransferAPI(t *testing.T) {
 
 				arg := db.TransferTxParams{
 					FromAccountID: account1.ID,
-					ToAccountID: account2.ID,
-					Amount: amount,
+					ToAccountID:   account2.ID,
+					Amount:        amount,
 				}
 
 				store.EXPECT().TransferTx(gomock.Any(), gomock.Eq(arg)).Times(1)

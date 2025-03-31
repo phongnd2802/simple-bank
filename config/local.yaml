@@ -4,6 +4,10 @@ data_source:
   driver: postgres
   source: postgresql://root:secret@localhost:5678/simple-bank?sslmode=disable
 
+redis:
+  host: 0.0.0.0
+  port: 6379
+
 server:
   http:
     host: 0.0.0.0
@@ -16,3 +20,8 @@ jwt:
   secret: r439r743c89rbv436c942v36e123v9c46231e32ecbt53t
   access_token_duration: 15m
   refresh_token_duration: 24h
+
+email:
+  sender_name: Simple Bank
+  sender_address: duyphong02802@gmail.com
+  sender_password: xxxx xxxx xxxx xxxx 

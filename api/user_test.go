@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	mockdb "github.com/phongnd2802/simple-bank/db/mock"
 	db "github.com/phongnd2802/simple-bank/db/sqlc"
 	"github.com/phongnd2802/simple-bank/util"

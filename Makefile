@@ -9,6 +9,9 @@ network:
 postgres:
 	docker run --name simple-bank --network bank-network -p 5678:5432 -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=root -d postgres:15-alpine
 
+redis:
+	docker run --name redis-queue --network bank-network -p 6379:6379 -d redis:7-alpine
+
 build-server:
 	docker build -t simplebank:latest .
 
@@ -38,9 +41,10 @@ dev:
 
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/phongnd2802/simple-bank/db/sqlc Store
+	mockgen -package mockwk -destination worker/mock/distributor.go github.com/phongnd2802/simple-bank/worker TaskDistributor
 
 test:
-	go test -v -cover ./...
+	go test -v -cover -short ./...
 
 
 proto:
@@ -55,4 +59,4 @@ proto:
 
 evans:
 	evans --host localhost --port 9090 -r repl
-.PHONY: server build-server mock dev test network postgres createdb dropdb migrate-up migrate-down create-migration sqlc proto evans
+.PHONY: redis server build-server mock dev test network postgres createdb dropdb migrate-up migrate-down create-migration sqlc proto evans

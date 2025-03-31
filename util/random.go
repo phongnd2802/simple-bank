@@ -9,7 +9,7 @@ import (
 
 var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 // RandomInt generates a random integer between min and max
 func RandomInt(min, max int64) int64 {

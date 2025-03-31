@@ -10,11 +10,14 @@ import (
 	"os"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/hibiken/asynq"
 	"github.com/phongnd2802/simple-bank/api"
 	db "github.com/phongnd2802/simple-bank/db/sqlc"
+	"github.com/phongnd2802/simple-bank/email"
 	"github.com/phongnd2802/simple-bank/gapi"
 	"github.com/phongnd2802/simple-bank/pb"
 	"github.com/phongnd2802/simple-bank/util"
+	"github.com/phongnd2802/simple-bank/worker"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
@@ -48,12 +51,29 @@ func main() {
 
 	store := db.NewStore(conn)
 
-	go runGatewayServer(config, store)
-	runGrpcServer(config, store)
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.Redis.Addr(),
+	}
+
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+	mailer := email.NewGmailSender(config.Email.EmailSenderName, config.Email.EmailSenderAddress, config.Email.EmailSenderPassword)
+
+	go runTaskProcessor(redisOpt, store, mailer)
+	go runGatewayServer(config, store, taskDistributor)
+	runGrpcServer(config, store, taskDistributor)
 }
 
-func runGrpcServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer email.EmailSender) {
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
+	log.Info().Msg("Start task processor")
+	err := taskProcessor.Start()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to start task processor")
+	}
+}
+
+func runGrpcServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal().Msgf("cannot create new server: %v", err)
 	}
@@ -65,7 +85,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 
 	listener, err := net.Listen("tcp", config.Server.Grpc.Addr())
 	if err != nil {
-		log.Fatal().Msg("cannot create listener")
+		log.Fatal().Err(err).Msg("cannot create listener")
 	}
 
 	log.Info().Msgf("start gRPC server at %s", listener.Addr().String())
@@ -75,8 +95,8 @@ func runGrpcServer(config util.Config, store db.Store) {
 	}
 }
 
-func runGatewayServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+func runGatewayServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal().Msgf("cannot create new server: %v", err)
 	}

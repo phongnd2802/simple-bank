@@ -9,9 +9,11 @@ import (
 
 // Config stores all configuaration of the application.
 type Config struct {
-	DB     Database `mapstructure:"data_source"`
-	Server Server   `mapstructure:"server"`
-	Token  Token    `mapstructure:"jwt"`
+	DB     Database  `mapstructure:"data_source"`
+	Server Server    `mapstructure:"server"`
+	Token  Token     `mapstructure:"jwt"`
+	Redis  RedisConf `mapstructure:"redis"`
+	Email  EmailConf `mapstructure:"email"`
 }
 
 func LoadConfig(name, path string) (config Config, err error) {
@@ -45,6 +47,21 @@ type ServerAddress struct {
 type Database struct {
 	Driver string `mapstructure:"driver"`
 	Source string `mapstructure:"source"`
+}
+
+type RedisConf struct {
+	Host string `mapstructure:"host"`
+	Port string `mapstrcuture:"port"`
+}
+
+func (r *RedisConf) Addr() string {
+	return fmt.Sprintf("%s:%s", r.Host, r.Port)
+}
+
+type EmailConf struct {
+	EmailSenderName     string `mapstructure:"sender_name"`
+	EmailSenderAddress  string `mapstructure:"sender_address"`
+	EmailSenderPassword string `mapstructure:"sender_password"`
 }
 
 type Token struct {
