@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lib/pq"
 	mockdb "github.com/phongnd2802/simple-bank/db/mock"
 	db "github.com/phongnd2802/simple-bank/db/sqlc"
 	"github.com/phongnd2802/simple-bank/pb"
@@ -152,7 +151,7 @@ func TestCreateUserAPI(t *testing.T) {
 				store.EXPECT().
 					CreateUserTx(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(db.CreateUserTxResult{}, &pq.Error{Code: "23505"})
+					Return(db.CreateUserTxResult{}, db.ErrUniqueViolation)
 
 				taskDistributor.EXPECT().
 					DistributeTaskSendVerifyEmail(gomock.Any(), gomock.Any(), gomock.Any()).

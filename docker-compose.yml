@@ -8,6 +8,9 @@ services:
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: simple-bank
   
+  redis:
+    image: redis:7-alpine
+    
   api:
     build: 
       context: .
@@ -19,5 +22,6 @@ services:
       MODE: production
     depends_on:
       - postgres
+      - redis
     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
     command: ["/app/main"]
