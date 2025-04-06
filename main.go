@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"embed"
 	"io/fs"
 	"net"
@@ -24,6 +23,8 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 
+	_ "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 )
 
@@ -44,7 +45,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("cannot load config: %v", err)
 	}
-	conn, err := sql.Open(config.DB.Driver, config.DB.Source)
+	conn, err := pgxpool.New(context.Background(), config.DB.Source)
 	if err != nil {
 		log.Fatal().Msgf("cannot connect db: %v", err)
 	}

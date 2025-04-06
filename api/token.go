@@ -1,12 +1,12 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	db "github.com/phongnd2802/simple-bank/db/sqlc"
 )
 
 type renewAccessTokenRequest struct {
@@ -33,7 +33,7 @@ func (server *Server) renewRefreshToken(ctx *gin.Context) {
 
 	session, err := server.store.GetSession(ctx, payload.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == db.ErrRecordNotFound {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -41,7 +41,7 @@ func (server *Server) renewRefreshToken(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	
+
 	if session.IsBlocked {
 		err := errors.New("blocked session")
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
@@ -57,7 +57,7 @@ func (server *Server) renewRefreshToken(ctx *gin.Context) {
 	if session.RefreshToken != params.RefreshToken {
 		err := errors.New("mismatched session token")
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return	
+		return
 	}
 
 	if time.Now().After(session.ExpiresAt) {
@@ -73,7 +73,7 @@ func (server *Server) renewRefreshToken(ctx *gin.Context) {
 	}
 
 	rsp := renewAccessTokenResponse{
-		AccessToken: accessToken,
+		AccessToken:          accessToken,
 		AccessTokenExpiresAt: accessPayload.ExpiresAt.Time,
 	}
 

@@ -2,7 +2,6 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
 
 	db "github.com/phongnd2802/simple-bank/db/sqlc"
 	"github.com/phongnd2802/simple-bank/pb"
@@ -22,7 +21,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 
 	user, err := server.store.GetUser(ctx, req.GetUsername())
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == db.ErrRecordNotFound {
 			return nil, status.Errorf(codes.NotFound, "username %s not found", req.GetUsername())
 		}
 		return nil, status.Errorf(codes.Internal, "failed to get user: %s", err)
@@ -62,12 +61,11 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		AccessTokenExpiresAt:  timestamppb.New(accessPayload.ExpiresAt.Time),
 		RefreshToken:          refreshToken,
 		RefreshTokenExpiresAt: timestamppb.New(refreshPayload.ExpiresAt.Time),
-		User: convertUser(user),
+		User:                  convertUser(user),
 	}
 
 	return rsp, nil
 }
-
 
 func validateLoginUserRequest(req *pb.LoginUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
 	if err := validator.ValidateUsername(req.GetUsername()); err != nil {

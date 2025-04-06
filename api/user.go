@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"net/http"
 	"time"
 
@@ -95,7 +94,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	user, err := server.store.GetUser(ctx, params.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == db.ErrRecordNotFound {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -123,12 +122,12 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
-		ID:        refreshPayload.ID,
+		ID:           refreshPayload.ID,
 		RefreshToken: refreshToken,
-		Username:  user.Username,
-		UserAgent: ctx.Request.UserAgent(),
-		ClientIp:  ctx.ClientIP(),
-		ExpiresAt: refreshPayload.ExpiresAt.Time,
+		Username:     user.Username,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		ExpiresAt:    refreshPayload.ExpiresAt.Time,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -136,12 +135,12 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	rsp := loginUserResponse{
-		SessionID: session.ID,
-		AccessToken: accessToken,
-		AccessTokenExpiresAt: accessPayload.ExpiresAt.Time,
-		RefreshToken: refreshToken,
+		SessionID:             session.ID,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiresAt.Time,
+		RefreshToken:          refreshToken,
 		RefreshTokenExpiresAt: refreshPayload.ExpiresAt.Time,
-		User:        newUserResponse(user),
+		User:                  newUserResponse(user),
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
